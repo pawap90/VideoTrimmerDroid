@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="progress_video_line_height">40dip</dimen>
+  <dimen name="frames_video_maxsize">50dip</dimen>
+</resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:id="@+id/layout_video_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:gravity="center">
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginBottom="0.0dp"
+            android:layout_marginTop="0.0dp" />
+        <LinearLayout
+            android:id="@+id/video_controls_container"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/videoView">
+            <Button
+                android:text="Start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_start" />
+            <Button
+                android:text="Pause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_pause" />
+            <Button
+                android:text="Stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_stop" />
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/layout_timeline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10.0dp"
+        android:layout_below="@id/layout_video_view"
+        android:background="@android:color/white">
+        <VideoTrimmer.Droid.View.TimelineView
+            android:id="@+id/timeline_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </RelativeLayout>
+    <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/layout_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_timeline">
+        <ImageView
+            android:id="@+id/range_arrow_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="124dp"
+            android:src="@drawable/range_arrow_left" />
+    </RelativeLayout>
+</RelativeLayout>

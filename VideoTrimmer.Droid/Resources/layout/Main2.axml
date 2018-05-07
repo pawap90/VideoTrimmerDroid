@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/layout_range"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal">
+
+  <RelativeLayout
+        android:id="@+id/layout_video_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:gravity="center">
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginBottom="0.0dp"
+        android:layout_marginTop="0.0dp" />
+    <LinearLayout
+        android:id="@+id/video_controls_container"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/videoView">
+      <Button
+          android:text="Start"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/btn_start" />
+      <Button
+          android:text="Pause"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/btn_pause" />
+      <Button
+          android:text="Stop"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/btn_stop" />
+    </LinearLayout>
+  </RelativeLayout>
+
+  <ImageView
+      android:id="@+id/position_arrow"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@drawable/position_arrow" />
+
+  <VideoTrimmer.Droid.View.TimelineView
+      android:id="@+id/timeline_video"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"/>
+
+  <ImageView
+      android:id="@+id/range_arrow_left"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@drawable/range_arrow_left" />
+
+  <ImageView
+      android:id="@+id/range_arrow_right"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@drawable/range_arrow_right" />
+</RelativeLayout>
