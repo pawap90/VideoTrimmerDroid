@@ -57,11 +57,11 @@
       android:id="@+id/range_arrow_left"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:src="@drawable/range_arrow_left" />
+      android:src="@drawable/range_bar_left" />
 
   <ImageView
       android:id="@+id/range_arrow_right"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:src="@drawable/range_arrow_right" />
+      android:src="@drawable/range_bar_right" />
 </RelativeLayout>

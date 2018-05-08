@@ -95,8 +95,7 @@ namespace VideoTrimmer.Droid.View
         private void Init()
         {
             mBitmapList = new List<Bitmap>();
-
-            mHeightView = Context.Resources.GetDimensionPixelOffset(Resource.Dimension.frames_video_maxsize);
+            mHeightView = Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize);
         }
 
         private void GetVideoFrames(int viewWidth)
@@ -120,7 +119,8 @@ namespace VideoTrimmer.Droid.View
 
                 for (int i = 0; i < numThumbs; ++i)
                 {
-                    Bitmap bitmap = mediaMetadataRetriever.GetScaledFrameAtTime(i * interval, Android.Media.Option.ClosestSync, thumbWidth, thumbHeight);
+                    Bitmap bitmap = mediaMetadataRetriever.GetFrameAtTime(i * interval, Android.Media.Option.ClosestSync);
+                    bitmap = Bitmap.CreateScaledBitmap(bitmap, thumbWidth, thumbHeight, false);
                     mBitmapList.Add(bitmap);
                 }
             }

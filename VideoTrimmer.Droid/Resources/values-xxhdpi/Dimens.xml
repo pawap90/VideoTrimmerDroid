@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="frames_video_maxsize">96px</dimen>
+  <dimen name="frames_video_vMargin">24px</dimen>
+  <dimen name="position_arrow_maxsize">96px</dimen>
+</resources>

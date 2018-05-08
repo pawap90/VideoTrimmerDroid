@@ -29,7 +29,14 @@ namespace VideoTrimmer.Droid
         private int videoHeight;
         private int videoWidth;
         private long videoDuration;
-        private int timelineWidth;
+        private int timelineStart;
+        private int timelineEnd;
+        private int leftArrowX;
+        private int rightArrowX;
+
+        private int maxArrowPositionRight;
+        private int maxArrowPositionLeft;
+
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -84,10 +91,16 @@ namespace VideoTrimmer.Droid
 
             while (videoView.IsPlaying)
             {
-                await System.Threading.Tasks.Task.Delay(500);
+                await System.Threading.Tasks.Task.Delay(250);
                 RunOnUiThread(() =>
                 {
-                    UpdateArrowPosition(imageViewArrowPosition, TimeToPosition(videoView.CurrentPosition));
+                    var newX = TimeToPosition(videoView.CurrentPosition);
+                    if (!CheckCollision(imageViewArrowPosition, newX))
+                        MoveArrows(imageViewArrowPosition, newX, false);
+                    else
+                    {
+                        videoView.Pause();
+                    }
                 });
             }
 
@@ -100,45 +113,53 @@ namespace VideoTrimmer.Droid
 
         private void VideoStop(object sender, EventArgs args)
         {
-            videoView.SeekTo(0);
             videoView.Pause();
+            MoveArrows(imageViewArrowPosition, leftArrowX);
         }
         #endregion
 
         private void SetupLayout()
         {
-            
-            RelativeLayout.LayoutParams layoutParamsPositionArrow = new RelativeLayout.LayoutParams(75, 75);
-            layoutParamsPositionArrow.AddRule(LayoutRules.Below, Resource.Id.layout_video_view);
-            imageViewArrowPosition.LayoutParameters = layoutParamsPositionArrow;
-            imageViewArrowPosition.SetOnTouchListener(this);
-
+            // Setup Timeline.
             var layoutParamsTimeline = (RelativeLayout.LayoutParams)timelineView.LayoutParameters;
-            layoutParamsTimeline.SetMargins(10, 10, 10, 10);
+            layoutParamsTimeline.SetMargins(Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize)/2, Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_vMargin), Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize)/2, Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_vMargin));
             layoutParamsTimeline.AddRule(LayoutRules.Below, Resource.Id.position_arrow);
             timelineView.LayoutParameters = layoutParamsTimeline;
 
-            int timelineHeight = 0;
-            if (this.videoHeight < this.videoWidth)
-                timelineHeight = (this.videoHeight * Resources.GetDimensionPixelOffset(Resource.Dimension.frames_video_maxsize)) / this.videoWidth;
-            else
-                timelineHeight = (this.videoWidth * Resources.GetDimensionPixelOffset(Resource.Dimension.frames_video_maxsize)) / this.videoHeight;
+            var displayMetrics = new DisplayMetrics();
+            WindowManager.DefaultDisplay.GetMetrics(displayMetrics);
+            this.timelineEnd = displayMetrics.WidthPixels - layoutParamsTimeline.RightMargin;
+            this.timelineStart = layoutParamsTimeline.LeftMargin;
 
-            this.timelineWidth = timelineView.Width - (layoutParamsTimeline.LeftMargin + layoutParamsTimeline.RightMargin);
+            // Setup position arrow.
+            RelativeLayout.LayoutParams layoutParamsPositionArrow = new RelativeLayout.LayoutParams(Resources.GetDimensionPixelSize(Resource.Dimension.position_arrow_maxsize) / 2, Resources.GetDimensionPixelSize(Resource.Dimension.position_arrow_maxsize));
+            layoutParamsPositionArrow.AddRule(LayoutRules.Below, Resource.Id.layout_video_view);
+            layoutParamsPositionArrow.TopMargin = Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_vMargin);
+            layoutParamsPositionArrow.LeftMargin = layoutParamsPositionArrow.Width / 2;
+            imageViewArrowPosition.LayoutParameters = layoutParamsPositionArrow;
+            imageViewArrowPosition.SetOnTouchListener(this);
 
-            RelativeLayout.LayoutParams layoutParamsLeftArrow = new RelativeLayout.LayoutParams(75, 75);
+            // Setupe left arrow.
+            RelativeLayout.LayoutParams layoutParamsLeftArrow = new RelativeLayout.LayoutParams(Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize) /2, Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize));
             layoutParamsLeftArrow.AddRule(LayoutRules.Below, Resource.Id.layout_video_view);
-            layoutParamsLeftArrow.TopMargin = layoutParamsPositionArrow.Height + timelineHeight + layoutParamsTimeline.TopMargin + layoutParamsTimeline.BottomMargin;
+            this.maxArrowPositionLeft = this.timelineStart - layoutParamsLeftArrow.Width;
+            this.leftArrowX = this.maxArrowPositionLeft;
+            layoutParamsLeftArrow.LeftMargin = maxArrowPositionLeft;
+            layoutParamsLeftArrow.TopMargin = layoutParamsPositionArrow.Height + layoutParamsPositionArrow.TopMargin + layoutParamsTimeline.TopMargin;
             imageViewArrowLeft.LayoutParameters = layoutParamsLeftArrow;
             imageViewArrowLeft.SetOnTouchListener(this);
 
-            RelativeLayout.LayoutParams layoutParamsRightArrow = new RelativeLayout.LayoutParams(75, 75);
-            layoutParamsRightArrow.LeftMargin = (imageViewArrowRight.Parent as RelativeLayout).Width - imageViewArrowRight.Width;
+            // Setup right arrow.
+            RelativeLayout.LayoutParams layoutParamsRightArrow = new RelativeLayout.LayoutParams(Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize) / 2, Resources.GetDimensionPixelSize(Resource.Dimension.frames_video_maxsize));
+            this.maxArrowPositionRight = this.timelineEnd;
+            this.rightArrowX = this.maxArrowPositionRight;
+            layoutParamsRightArrow.LeftMargin = maxArrowPositionRight;
             layoutParamsRightArrow.AddRule(LayoutRules.Below, Resource.Id.layout_video_view);
-            layoutParamsRightArrow.TopMargin = layoutParamsPositionArrow.Height + timelineHeight + layoutParamsTimeline.TopMargin + layoutParamsTimeline.BottomMargin;
+            layoutParamsRightArrow.TopMargin = layoutParamsPositionArrow.Height + layoutParamsPositionArrow.TopMargin + layoutParamsTimeline.TopMargin;
             imageViewArrowRight.LayoutParameters = layoutParamsRightArrow;
             imageViewArrowRight.SetOnTouchListener(this);
 
+            // Add video to timeline.
             timelineView.SetVideo(uri);
         }
 
@@ -168,8 +189,9 @@ namespace VideoTrimmer.Droid
 
         private bool CheckCollision(ImageView imageView, int newX)
         {
-            if (newX >= mRootLayout.Width - imageView.Width)
+            if (newX < this.maxArrowPositionLeft || newX > this.maxArrowPositionRight)
                 return true;
+
             switch (imageView.Id)
             {
                 case Resource.Id.range_arrow_left:
@@ -181,7 +203,7 @@ namespace VideoTrimmer.Droid
                         return true;
                     break;
                 case Resource.Id.position_arrow:
-                    if (newX < imageViewArrowLeft.Left || newX > imageViewArrowRight.Left)
+                    if (newX - (imageView.Width / 2) < this.leftArrowX || newX + (imageView.Width / 2) > this.rightArrowX)
                         return true;
                     break;
             }
@@ -189,38 +211,38 @@ namespace VideoTrimmer.Droid
             return false;
         }
 
-        private void MoveArrows(ImageView imageView, int newX)
+        private void MoveArrows(ImageView imageView, int newX, bool updateVideoPosition = true)
         {
             var currentLayoutParams = (ViewGroup.MarginLayoutParams)imageView.LayoutParameters;
 
             switch (imageView.Id)
             {
                 case Resource.Id.range_arrow_left:
+                    this.leftArrowX = newX;
                     if (newX > imageViewArrowPosition.Left)
                     {
-                        var positionLayoutParams = (ViewGroup.MarginLayoutParams)imageViewArrowPosition.LayoutParameters;
-                        positionLayoutParams.LeftMargin = newX;
-                        imageViewArrowPosition.LayoutParameters = positionLayoutParams;
-                        UpdateVideoPosition(newX);
+                        UpdateArrowPosition(imageViewArrowPosition, newX);
+                        if (updateVideoPosition)
+                            UpdateVideoPosition(newX);
                     }
 
                     break;
                 case Resource.Id.range_arrow_right:
+                    this.rightArrowX = newX;
                     if (newX < imageViewArrowPosition.Left)
                     {
-                        var positionLayoutParams = (ViewGroup.MarginLayoutParams)imageViewArrowPosition.LayoutParameters;
-                        positionLayoutParams.LeftMargin = newX;
-                        imageViewArrowPosition.LayoutParameters = positionLayoutParams;
-                        UpdateVideoPosition(newX);
+                        UpdateArrowPosition(imageViewArrowPosition, newX);
+                        if (updateVideoPosition)
+                            UpdateVideoPosition(newX);
                     }
                     break;
                 case Resource.Id.position_arrow:
-                    UpdateVideoPosition(newX);
+                    if (updateVideoPosition)
+                        UpdateVideoPosition(newX);
                     break;
             }
 
-            currentLayoutParams.LeftMargin = newX;
-            imageView.LayoutParameters = currentLayoutParams;
+            UpdateArrowPosition(imageView, newX);
         }
 
         private void UpdateArrowPosition(ImageView imageView, int newPositionX)
@@ -233,12 +255,12 @@ namespace VideoTrimmer.Droid
         private int TimeToPosition(int currentTime)
         {
             float timePercentage = (float)currentTime / (float)(this.videoDuration/1000);
-            return Convert.ToInt32(this.timelineWidth * timePercentage);
+            return Convert.ToInt32(this.timelineEnd * timePercentage);
         }
 
         private float PositionPercentage(int newPosition)
         {
-            return (float)newPosition / (float)this.timelineWidth;
+            return (float)newPosition / (float)this.timelineEnd;
         }
 
         private void UpdateVideoPosition(int newPosition)
